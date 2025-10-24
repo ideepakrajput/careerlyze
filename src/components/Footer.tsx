@@ -9,6 +9,11 @@ import {
   Phone,
   MapPin,
   Sparkles,
+  Github,
+  ExternalLink,
+  Users,
+  Shield,
+  Scale,
 } from "lucide-react";
 
 export default function Footer() {
@@ -19,15 +24,15 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8">
           <div>
-            <div className="flex items-center mb-4">
+            <div className="flex items-center mb-4 bg-white rounded-full">
               <Image
                 src="/logo.png"
                 alt="Careerlyze Logo"
-                width={40}
-                height={40}
-                className="mr-2"
+                width={70}
+                height={70}
+                className="mr-2 mix-blend-multiply"
               />
-              <span className="text-xl font-bold">
+              <span className="text-xl font-bold text-center justify-center">
                 <span className="text-blue-400">Career</span>
                 <span className="text-green-400">lyze</span>
               </span>
@@ -38,7 +43,15 @@ export default function Footer() {
             </p>
             <p className="text-gray-400 text-sm">
               Transform your career with intelligent resume analysis and job
-              matching.
+              matching. Developed by{" "}
+              <a
+                href="https://ideepakrajput.in"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300"
+              >
+                ideepakrajput.in
+              </a>
             </p>
           </div>
           <div>
@@ -88,39 +101,65 @@ export default function Footer() {
               <li>
                 <Link
                   href="/about"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
                 >
+                  <Users className="w-4 h-4" />
                   About Us
                 </Link>
               </li>
               <li>
                 <Link
                   href="/contact"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
                 >
+                  <Mail className="w-4 h-4" />
                   Contact
                 </Link>
               </li>
             </ul>
           </div>
           <div>
-            <h3 className="text-lg font-semibold mb-4">Legal</h3>
+            <h3 className="text-lg font-semibold mb-4">Legal & Links</h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/privacy"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
                 >
+                  <Shield className="w-4 h-4" />
                   Privacy Policy
                 </Link>
               </li>
               <li>
                 <Link
                   href="/terms"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
                 >
+                  <Scale className="w-4 h-4" />
                   Terms of Service
                 </Link>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/ideepakrajput/careerlyze"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+                >
+                  <Github className="w-4 h-4" />
+                  GitHub Repository
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://ideepakrajput.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  ideepakrajput.in
+                </a>
               </li>
             </ul>
           </div>

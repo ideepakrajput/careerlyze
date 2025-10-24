@@ -69,11 +69,32 @@ export default function TermsPage() {
                 If you have any questions about these Terms of Service, please
                 contact us at{" "}
                 <a
-                  href="mailto:legal@careerlyze.com"
+                  href="mailto:careerlyze@ideepakrajput.in"
                   className="text-blue-600 hover:text-blue-500"
                 >
-                  legal@careerlyze.com
+                  careerlyze@ideepakrajput.in
                 </a>
+              </p>
+              <p className="text-gray-600 mt-4">
+                This project is developed by{" "}
+                <a
+                  href="https://ideepakrajput.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-500"
+                >
+                  ideepakrajput.in
+                </a>{" "}
+                and the source code is available on{" "}
+                <a
+                  href="https://github.com/ideepakrajput/careerlyze"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-500"
+                >
+                  GitHub
+                </a>
+                .
               </p>
             </div>
           </div>

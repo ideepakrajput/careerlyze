@@ -2,27 +2,47 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { authAPI } from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Login() {
+  const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const response = await authAPI.login({
+        email: formData.email,
+        password: formData.password,
+      });
 
-    setIsLoading(false);
-    // Handle login logic here
+      // Store token and user data using auth context
+      login(response.user, response.token);
+
+      // Redirect to home page
+      router.push("/");
+    } catch (error: any) {
+      setError(
+        error.response?.data?.error || "Login failed. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,6 +137,12 @@ export default function Login() {
                   </div>
                 </div>
               </div>
+
+              {error && (
+                <div className="mt-4 p-3 rounded-lg text-sm bg-red-100 text-red-700">
+                  {error}
+                </div>
+              )}
 
               <div className="flex items-center justify-between mt-6">
                 <div className="flex items-center">

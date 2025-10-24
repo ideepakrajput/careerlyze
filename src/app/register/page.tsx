@@ -2,11 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { authAPI } from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Register() {
+  const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -18,16 +23,47 @@ export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      setIsLoading(false);
+      return;
+    }
 
-    setIsLoading(false);
-    // Handle registration logic here
+    // Validate terms agreement
+    if (!formData.agreeToTerms) {
+      setError("Please agree to the terms and conditions");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await authAPI.register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      // Store token and user data using auth context
+      login(response.user, response.token);
+
+      // Redirect to home page
+      router.push("/");
+    } catch (error: any) {
+      setError(
+        error.response?.data?.error || "Registration failed. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -211,6 +247,12 @@ export default function Register() {
                   </div>
                 </div>
               </div>
+
+              {error && (
+                <div className="mt-4 p-3 rounded-lg text-sm bg-red-100 text-red-700">
+                  {error}
+                </div>
+              )}
 
               <div className="flex items-center mt-6">
                 <input

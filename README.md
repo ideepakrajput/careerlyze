@@ -1,36 +1,221 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Careerlyze - AI-Powered Resume Evaluation & Job Fit System
 
-## Getting Started
+![Careerlyze Logo](public/logo.png)
 
-First, run the development server:
+A cutting-edge AI-powered platform that revolutionizes resume evaluation and job matching using advanced Natural Language Processing (NLP) technology.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🌟 Features
+
+- **Smart Resume Analysis** - Advanced NLP algorithms analyze resume structure, content quality, and keyword optimization
+- **ATS Score Calculation** - Get precise ATS compatibility scores and detailed feedback
+- **Intelligent Recommendations** - Receive personalized suggestions for skills, structure improvements, and missing keywords
+- **Job Matching** - Compare resume content with job descriptions to estimate match percentages
+- **Professional Email Templates** - Beautiful HTML email templates for user communication
+- **Secure Authentication** - JWT-based authentication with password reset via OTP
+
+## 🚀 Tech Stack
+
+- **Frontend**: Next.js 16, React 19, TypeScript
+- **Styling**: Tailwind CSS 4
+- **Database**: MongoDB Atlas
+- **Authentication**: JWT with bcryptjs
+- **Email**: Nodemailer with Gmail SMTP
+- **Icons**: Lucide React
+- **HTTP Client**: Axios
+
+## 📋 Prerequisites
+
+- Node.js 18+
+- MongoDB Atlas account
+- Gmail account with App Password
+
+## 🛠️ Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/ideepakrajput/careerlyze.git
+   cd careerlyze
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   Create a `.env.local` file in the root directory:
+
+   ```env
+   # Database
+   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/?appName=careerlyze
+
+   # JWT Secret
+   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+
+   # Email Configuration
+   GMAIL_USER=careerlyze@ideepakrajput.in
+   GMAIL_APP_PASSWORD=your-gmail-app-password
+
+   # Application URL
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   ```
+
+4. **Run the development server**
+
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## 📁 Project Structure
+
+```
+careerlyze/
+├── src/
+│   ├── app/                    # Next.js App Router pages
+│   │   ├── api/auth/          # Authentication API routes
+│   │   ├── login/             # Login page
+│   │   ├── register/          # Registration page
+│   │   ├── dashboard/         # Protected dashboard
+│   │   ├── forgot-password/   # Password reset flow
+│   │   └── reset-password/    # Password reset form
+│   ├── components/            # Reusable React components
+│   │   ├── Header.tsx         # Navigation header
+│   │   ├── Footer.tsx         # Site footer
+│   │   ├── AuthProvider.tsx   # Authentication context
+│   │   └── ProtectedRoute.tsx # Route protection
+│   ├── hooks/                 # Custom React hooks
+│   │   └── useAuth.ts         # Authentication hook
+│   ├── lib/                   # Utility libraries
+│   │   ├── api.ts            # Axios API client
+│   │   ├── auth.ts           # Authentication utilities
+│   │   ├── email.ts          # Email templates
+│   │   ├── jwt.ts            # JWT utilities
+│   │   └── mongodb.ts         # Database connection
+│   ├── models/               # Database models
+│   │   └── User.ts           # User schema
+│   └── types/                # TypeScript type definitions
+└── public/                   # Static assets
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔐 Authentication API
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Endpoints
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Method | Endpoint                    | Description                 | Auth Required |
+| ------ | --------------------------- | --------------------------- | ------------- |
+| POST   | `/api/auth/register`        | Register new user           | No            |
+| POST   | `/api/auth/login`           | Login user                  | No            |
+| POST   | `/api/auth/forgot-password` | Send OTP for password reset | No            |
+| POST   | `/api/auth/verify-otp`      | Verify OTP                  | No            |
+| POST   | `/api/auth/reset-password`  | Reset password with OTP     | No            |
+| GET    | `/api/auth/profile`         | Get user profile            | Yes           |
+| PUT    | `/api/auth/profile`         | Update user profile         | Yes           |
 
-## Learn More
+### Usage Example
 
-To learn more about Next.js, take a look at the following resources:
+```typescript
+import { authAPI } from "@/lib/api";
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+// Register a new user
+const response = await authAPI.register({
+  firstName: "John",
+  lastName: "Doe",
+  email: "john@example.com",
+  password: "password123",
+});
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+// Login user
+const loginResponse = await authAPI.login({
+  email: "john@example.com",
+  password: "password123",
+});
+```
 
-## Deploy on Vercel
+## 🎨 UI Components
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Responsive Design** - Mobile-first approach with Tailwind CSS
+- **Modern Icons** - Lucide React icons throughout the application
+- **Professional Styling** - Clean, modern design with smooth animations
+- **Accessibility** - WCAG compliant components
+- **Dark Mode Ready** - Prepared for dark mode implementation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📧 Email Templates
+
+The application includes professional HTML email templates:
+
+- **Welcome Email** - Sent after successful registration
+- **OTP Email** - Password reset with 6-digit OTP code
+- **Professional Design** - Branded templates with Careerlyze styling
+
+## 🔒 Security Features
+
+- **Password Hashing** - bcryptjs with 12 salt rounds
+- **JWT Tokens** - Secure authentication with 7-day expiry
+- **OTP Security** - 10-minute expiration for password reset codes
+- **Input Validation** - Client and server-side validation
+- **Rate Limiting** - Protection against brute force attacks
+
+## 🌐 Deployment
+
+### Vercel (Recommended)
+
+1. Push your code to GitHub
+2. Connect your repository to Vercel
+3. Add environment variables in Vercel dashboard
+4. Deploy automatically
+
+### Other Platforms
+
+The application can be deployed to any platform that supports Next.js:
+
+- Netlify
+- Railway
+- DigitalOcean App Platform
+- AWS Amplify
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👨‍💻 Developer
+
+**Deepak Rajput**
+
+- Website: [ideepakrajput.in](https://ideepakrajput.in)
+- GitHub: [@ideepakrajput](https://github.com/ideepakrajput)
+- Email: [careerlyze@ideepakrajput.in](mailto:careerlyze@ideepakrajput.in)
+- Phone: [+91 7254880990](tel:+917254880990)
+- Location: Naraina, Delhi - 110020
+
+## 🙏 Acknowledgments
+
+- Next.js team for the amazing framework
+- Tailwind CSS for the utility-first CSS framework
+- Lucide for the beautiful icon set
+- MongoDB for the database solution
+- All open-source contributors
+
+## 📞 Support
+
+If you have any questions or need support, please contact:
+
+- **Email**: [careerlyze@ideepakrajput.in](mailto:careerlyze@ideepakrajput.in)
+- **Phone**: [+91 7254880990](tel:+917254880990)
+- **GitHub Issues**: [Create an issue](https://github.com/ideepakrajput/careerlyze/issues)
+
+---
+
+**Made with ❤️ by [ideepakrajput.in](https://ideepakrajput.in)**

@@ -14,16 +14,43 @@ export default function ContactPage() {
     message: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setMessage("");
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
-    setIsLoading(false);
-    // Handle contact form submission here
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsSuccess(true);
+        setMessage(data.message);
+        // Reset form
+        setFormData({
+          name: "",
+          email: "",
+          subject: "",
+          message: "",
+        });
+      } else {
+        setMessage(data.error);
+      }
+    } catch (error) {
+      setMessage("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (
@@ -63,7 +90,12 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Email</h3>
-                    <p className="text-gray-600">support@careerlyze.com</p>
+                    <a
+                      href="mailto:careerlyze@ideepakrajput.in"
+                      className="text-blue-600 hover:text-blue-500 transition-colors"
+                    >
+                      careerlyze@ideepakrajput.in
+                    </a>
                   </div>
                 </div>
 
@@ -73,7 +105,12 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Phone</h3>
-                    <p className="text-gray-600">+1 (555) 123-4567</p>
+                    <a
+                      href="tel:+917254880990"
+                      className="text-green-600 hover:text-green-500 transition-colors"
+                    >
+                      +91 7254880990
+                    </a>
                   </div>
                 </div>
 
@@ -83,9 +120,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Address</h3>
-                    <p className="text-gray-600">
-                      123 Tech Street, Innovation City, IC 12345
-                    </p>
+                    <p className="text-gray-600">Naraina, Delhi - 110028</p>
                   </div>
                 </div>
               </div>
@@ -93,120 +128,168 @@ export default function ContactPage() {
 
             <div className="bg-white rounded-2xl shadow-xl p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                Send us a Message
+                {isSuccess ? "Message Sent Successfully!" : "Send us a Message"}
               </h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Full Name
-                  </label>
-                  <div className="relative mt-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      required
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400"
-                      placeholder="Your full name"
-                    />
+              {isSuccess ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      className="w-8 h-8 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
                   </div>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    Thank You!
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    We've received your message and will get back to you within
+                    24 hours.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setIsSuccess(false);
+                      setMessage("");
+                    }}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                   >
-                    Email Address
-                  </label>
-                  <div className="relative mt-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      required
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400"
-                      placeholder="your.email@example.com"
-                    />
-                  </div>
+                    Send Another Message
+                  </button>
                 </div>
-
-                <div>
-                  <label
-                    htmlFor="subject"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Subject
-                  </label>
-                  <div className="relative mt-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <MessageSquare className="h-5 w-5 text-gray-400" />
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Full Name
+                    </label>
+                    <div className="relative mt-1">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <User className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        required
+                        value={formData.name}
+                        onChange={handleChange}
+                        className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400"
+                        placeholder="Your full name"
+                      />
                     </div>
-                    <input
-                      type="text"
-                      id="subject"
-                      name="subject"
-                      required
-                      value={formData.subject}
-                      onChange={handleChange}
-                      className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400"
-                      placeholder="What's this about?"
-                    />
                   </div>
-                </div>
 
-                <div>
-                  <label
-                    htmlFor="message"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Message
-                  </label>
-                  <div className="relative mt-1">
-                    <div className="absolute top-3 left-3 flex items-center pointer-events-none">
-                      <MessageSquare className="h-5 w-5 text-gray-400" />
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Email Address
+                    </label>
+                    <div className="relative mt-1">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Mail className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        required
+                        value={formData.email}
+                        onChange={handleChange}
+                        className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400"
+                        placeholder="your.email@example.com"
+                      />
                     </div>
-                    <textarea
-                      id="message"
-                      name="message"
-                      rows={4}
-                      required
-                      value={formData.message}
-                      onChange={handleChange}
-                      className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400"
-                      placeholder="Tell us more about your inquiry..."
-                    />
                   </div>
-                </div>
 
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Sending...
+                  <div>
+                    <label
+                      htmlFor="subject"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Subject
+                    </label>
+                    <div className="relative mt-1">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <MessageSquare className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        id="subject"
+                        name="subject"
+                        required
+                        value={formData.subject}
+                        onChange={handleChange}
+                        className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400"
+                        placeholder="What's this about?"
+                      />
                     </div>
-                  ) : (
-                    "Send Message"
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="message"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Message
+                    </label>
+                    <div className="relative mt-1">
+                      <div className="absolute top-3 left-3 flex items-center pointer-events-none">
+                        <MessageSquare className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <textarea
+                        id="message"
+                        name="message"
+                        rows={4}
+                        required
+                        value={formData.message}
+                        onChange={handleChange}
+                        className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400"
+                        placeholder="Tell us more about your inquiry..."
+                      />
+                    </div>
+                  </div>
+
+                  {message && (
+                    <div
+                      className={`p-4 rounded-lg text-sm ${
+                        isSuccess
+                          ? "bg-green-100 text-green-700 border border-green-200"
+                          : "bg-red-100 text-red-700 border border-red-200"
+                      }`}
+                    >
+                      {message}
+                    </div>
                   )}
-                </button>
-              </form>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        Sending...
+                      </div>
+                    ) : (
+                      "Send Message"
+                    )}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         </div>
