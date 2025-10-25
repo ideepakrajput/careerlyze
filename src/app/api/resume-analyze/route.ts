@@ -60,7 +60,7 @@ const guardRails = {
       "website": "string"
     }
   }`,
-  jobMatchAnalysis: `Analyze resume against job requirements. Focus on keyword matching, experience relevance, and skill alignment. Provide specific, actionable feedback. Extract contact information including name, email, phone, location, LinkedIn, GitHub, and website if available.`,
+  jobMatchAnalysis: `Analyze resume against job requirements. Focus on keyword matching, experience relevance, and skill alignment. Provide specific, actionable feedback. Extract contact information including name, email, phone, location, LinkedIn profile URL (only the profile URL, not the full linkedin.com/in/...), GitHub profile URL, and website if available.`,
 };
 
 // Helper function to run multer
@@ -233,6 +233,9 @@ export async function POST(req: NextRequest) {
       });
 
       await resume.save();
+
+      console.log("Resume saved with ID:", resume._id);
+      console.log("Resume LinkedIn:", structuredData.contactInfo?.linkedin);
 
       // Clean up uploaded file from Gemini (optional)
       try {

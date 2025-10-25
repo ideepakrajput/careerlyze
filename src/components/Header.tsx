@@ -77,6 +77,16 @@ export default function Header() {
               Features
             </Link>
             <Link
+              href="/how-it-works"
+              className={`transition-colors ${
+                isActive("/how-it-works")
+                  ? "text-blue-600 font-semibold"
+                  : "text-gray-700 hover:text-blue-600"
+              }`}
+            >
+              How It Works
+            </Link>
+            <Link
               href="/contact"
               className={`transition-colors ${
                 isActive("/contact")
@@ -86,7 +96,11 @@ export default function Header() {
             >
               Contact
             </Link>
-            {isAuthenticated && (
+          </nav>
+
+          {/* Auth Buttons */}
+          <div className="hidden md:flex items-center space-x-4">
+            {isAuthenticated ? (
               <>
                 <Link
                   href="/dashboard"
@@ -98,68 +112,44 @@ export default function Header() {
                 >
                   Dashboard
                 </Link>
-                <Link
-                  href="/resume-analyze"
-                  className={`transition-colors ${
-                    isActive("/resume-analyze")
-                      ? "text-blue-600 font-semibold"
-                      : "text-gray-700 hover:text-blue-600"
-                  }`}
-                >
-                  Resume Analysis
-                </Link>
-              </>
-            )}
-          </nav>
-
-          {/* Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            {isAuthenticated ? (
-              <div className="relative">
-                <button
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
-                >
-                  <User className="w-5 h-5" />
-                  <span>{user?.firstName}</span>
-                </button>
-                {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
-                    <div className="px-4 py-2 text-sm text-gray-700 border-b">
-                      <span className="font-medium text-gray-700">
-                        {user?.firstName} {user?.lastName}
-                      </span>
-                      <br />
-                      <span className="text-sm text-gray-500">
-                        {user?.email}
-                      </span>
+                <div className="relative">
+                  <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+                  >
+                    <User className="w-5 h-5" />
+                    <span>{user?.firstName}</span>
+                  </button>
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
+                      <div className="px-4 py-2 text-sm text-gray-700 border-b">
+                        <span className="font-medium text-gray-700">
+                          {user?.firstName} {user?.lastName}
+                        </span>
+                        <br />
+                        <span className="text-sm text-gray-500">
+                          {user?.email}
+                        </span>
+                      </div>
+                      <Link
+                        href="/dashboard"
+                        className="w-full text-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <BarChart3 className="w-4 h-4 text-blue-500" />
+                        <span>Dashboard</span>
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                      >
+                        <LogOut className="w-4 h-4 text-red-500" />
+                        <span className="text-red-500">Logout</span>
+                      </button>
                     </div>
-                    <Link
-                      href="/dashboard"
-                      className="w-full text-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      <BarChart3 className="w-4 h-4 text-blue-500" />
-                      <span>Dashboard</span>
-                    </Link>
-                    <Link
-                      href="/resume-analyze"
-                      className="w-full text-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      <FileText className="w-4 h-4 text-green-500" />
-                      <span>Resume Analysis</span>
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
-                    >
-                      <LogOut className="w-4 h-4 text-red-500" />
-                      <span className="text-red-500">Logout</span>
-                    </button>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              </>
             ) : (
               <>
                 <Link
@@ -235,30 +225,6 @@ export default function Header() {
               >
                 Contact
               </Link>
-              {isAuthenticated && (
-                <>
-                  <Link
-                    href="/dashboard"
-                    className={`transition-colors ${
-                      isActive("/dashboard")
-                        ? "text-blue-600 font-semibold"
-                        : "text-gray-700 hover:text-blue-600"
-                    }`}
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    href="/resume-analyze"
-                    className={`transition-colors ${
-                      isActive("/resume-analyze")
-                        ? "text-blue-600 font-semibold"
-                        : "text-gray-700 hover:text-blue-600"
-                    }`}
-                  >
-                    Resume Analysis
-                  </Link>
-                </>
-              )}
               <div className="pt-4 border-t">
                 {isAuthenticated ? (
                   <div className="space-y-2">
@@ -272,14 +238,6 @@ export default function Header() {
                     >
                       <BarChart3 className="w-4 h-4" />
                       <span>Dashboard</span>
-                    </Link>
-                    <Link
-                      href="/resume-analyze"
-                      className="w-full text-left px-2 py-2 text-gray-700 hover:text-blue-600 transition-colors flex items-center space-x-2"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <FileText className="w-4 h-4" />
-                      <span>Resume Analysis</span>
                     </Link>
                     <button
                       onClick={handleLogout}

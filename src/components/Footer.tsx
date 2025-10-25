@@ -1,22 +1,27 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
 import {
   FileText,
   BarChart3,
   Search,
   Lightbulb,
   Mail,
-  Phone,
-  MapPin,
   Sparkles,
   Github,
   ExternalLink,
   Users,
   Shield,
   Scale,
+  BookOpen,
+  Target,
+  LayoutDashboard,
 } from "lucide-react";
 
 export default function Footer() {
+  const { isAuthenticated } = useAuth();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -109,6 +114,24 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  href="/how-it-works"
+                  className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  How It Works
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/features"
+                  className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+                >
+                  <Target className="w-4 h-4" />
+                  Features
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/contact"
                   className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
                 >
@@ -116,6 +139,17 @@ export default function Footer() {
                   Contact
                 </Link>
               </li>
+              {isAuthenticated && (
+                <li>
+                  <Link
+                    href="/dashboard"
+                    className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    Dashboard
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
           <div>

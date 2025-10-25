@@ -565,9 +565,13 @@ export default function DashboardPage() {
                     <div
                       key={resume._id}
                       className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-200 cursor-pointer group"
-                      onClick={() =>
-                        router.push(`/resume-analysis/${resume._id}`)
-                      }
+                      onClick={() => {
+                        console.log(
+                          "Dashboard - navigating to resume analysis with ID:",
+                          resume._id
+                        );
+                        router.push(`/resume-analysis/${resume._id}`);
+                      }}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
@@ -653,6 +657,10 @@ export default function DashboardPage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
+                              console.log(
+                                "Dashboard - navigating to resume analysis with ID:",
+                                resume._id
+                              );
                               router.push(`/resume-analysis/${resume._id}`);
                             }}
                             className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"

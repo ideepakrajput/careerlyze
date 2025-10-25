@@ -81,6 +81,7 @@ export default function ResumeAnalysisDetail() {
     const loadResume = async () => {
       if (isAuthenticated) {
         const { id } = await params;
+        console.log("Resume analysis page - received ID:", id);
         if (id && typeof id === "string") {
           fetchResumeAnalysis(id);
         }
