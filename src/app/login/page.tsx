@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
@@ -19,6 +19,22 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // Load saved credentials on component mount
+  useEffect(() => {
+    const savedCredentials = localStorage.getItem("careerlyze_remember_me");
+    if (savedCredentials) {
+      try {
+        const { email, password } = JSON.parse(savedCredentials);
+        setFormData({ email, password });
+        setRememberMe(true);
+      } catch (error) {
+        console.error("Error loading saved credentials:", error);
+        localStorage.removeItem("careerlyze_remember_me");
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +50,20 @@ export default function Login() {
       // Store token and user data using auth context
       login(response.user, response.token);
 
+      // Save credentials if "Remember Me" is checked
+      if (rememberMe) {
+        localStorage.setItem(
+          "careerlyze_remember_me",
+          JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+          })
+        );
+      } else {
+        // Clear saved credentials if "Remember Me" is unchecked
+        localStorage.removeItem("careerlyze_remember_me");
+      }
+
       // Redirect to home page
       router.push("/");
     } catch (error: any) {
@@ -46,10 +76,21 @@ export default function Login() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value, type, checked } = e.target;
+    if (name === "remember-me") {
+      setRememberMe(checked);
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
+  };
+
+  const clearSavedCredentials = () => {
+    localStorage.removeItem("careerlyze_remember_me");
+    setFormData({ email: "", password: "" });
+    setRememberMe(false);
   };
 
   return (
@@ -84,7 +125,7 @@ export default function Login() {
                     Email address
                   </label>
                   <div className="relative mt-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-20">
                       <Mail className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
@@ -95,7 +136,7 @@ export default function Login() {
                       required
                       value={formData.email}
                       onChange={handleChange}
-                      className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400"
+                      className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400 bg-white"
                       placeholder="Enter your email"
                     />
                   </div>
@@ -109,7 +150,7 @@ export default function Login() {
                     Password
                   </label>
                   <div className="relative mt-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-20">
                       <Lock className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
@@ -120,12 +161,12 @@ export default function Login() {
                       required
                       value={formData.password}
                       onChange={handleChange}
-                      className="appearance-none relative block w-full pl-10 pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400"
+                      className="appearance-none relative block w-full pl-10 pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400 bg-white"
                       placeholder="Enter your password"
                     />
                     <button
                       type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center z-30 hover:bg-gray-50 rounded-r-lg"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
@@ -150,6 +191,8 @@ export default function Login() {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
+                    checked={rememberMe}
+                    onChange={handleChange}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <label

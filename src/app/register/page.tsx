@@ -107,17 +107,18 @@ export default function Register() {
                       First name
                     </label>
                     <div className="relative mt-1">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-20">
                         <User className="h-5 w-5 text-gray-400" />
                       </div>
                       <input
                         id="firstName"
                         name="firstName"
                         type="text"
+                        autoComplete="given-name"
                         required
                         value={formData.firstName}
                         onChange={handleChange}
-                        className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400"
+                        className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400 bg-white"
                         placeholder="First name"
                       />
                     </div>
@@ -131,17 +132,18 @@ export default function Register() {
                       Last name
                     </label>
                     <div className="relative mt-1">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-20">
                         <User className="h-5 w-5 text-gray-400" />
                       </div>
                       <input
                         id="lastName"
                         name="lastName"
                         type="text"
+                        autoComplete="family-name"
                         required
                         value={formData.lastName}
                         onChange={handleChange}
-                        className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400"
+                        className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400 bg-white"
                         placeholder="Last name"
                       />
                     </div>
@@ -156,7 +158,7 @@ export default function Register() {
                     Email address
                   </label>
                   <div className="relative mt-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-20">
                       <Mail className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
@@ -167,7 +169,7 @@ export default function Register() {
                       required
                       value={formData.email}
                       onChange={handleChange}
-                      className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400"
+                      className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400 bg-white"
                       placeholder="Enter your email"
                     />
                   </div>
@@ -181,7 +183,7 @@ export default function Register() {
                     Password
                   </label>
                   <div className="relative mt-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-20">
                       <Lock className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
@@ -192,12 +194,12 @@ export default function Register() {
                       required
                       value={formData.password}
                       onChange={handleChange}
-                      className="appearance-none relative block w-full pl-10 pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400"
+                      className="appearance-none relative block w-full pl-10 pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400 bg-white"
                       placeholder="Create a password"
                     />
                     <button
                       type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center z-30 hover:bg-gray-50 rounded-r-lg"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
@@ -217,7 +219,7 @@ export default function Register() {
                     Confirm password
                   </label>
                   <div className="relative mt-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-20">
                       <Lock className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
@@ -228,12 +230,12 @@ export default function Register() {
                       required
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className="appearance-none relative block w-full pl-10 pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400"
+                      className="appearance-none relative block w-full pl-10 pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-200 hover:border-blue-400 bg-white"
                       placeholder="Confirm your password"
                     />
                     <button
                       type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center z-30 hover:bg-gray-50 rounded-r-lg"
                       onClick={() =>
                         setShowConfirmPassword(!showConfirmPassword)
                       }
