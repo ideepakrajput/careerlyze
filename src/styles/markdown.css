@@ -1,0 +1,299 @@
+/* Unified Markdown Styling */
+.markdown-content {
+  max-width: none;
+  line-height: 1.7;
+  color: #374151;
+}
+
+/* Headings */
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  color: #111827;
+  font-weight: 600;
+  margin-top: 0;
+}
+
+.markdown-content h1 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  margin-top: 1.5rem;
+}
+
+.markdown-content h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.markdown-content h3 {
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
+}
+
+.markdown-content h4 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+/* Paragraphs */
+.markdown-content p {
+  color: #374151;
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+/* Lists */
+.markdown-content ul,
+.markdown-content ol {
+  color: #374151;
+  margin-bottom: 1rem;
+}
+
+.markdown-content li {
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-content ul li {
+  list-style-type: disc;
+  list-style-position: inside;
+}
+
+.markdown-content ol li {
+  list-style-type: decimal;
+  list-style-position: inside;
+}
+
+/* Nested lists */
+.markdown-content ul ul,
+.markdown-content ol ol,
+.markdown-content ul ol,
+.markdown-content ol ul {
+  margin-left: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* Strong and emphasis */
+.markdown-content strong,
+.markdown-content b {
+  color: #111827;
+  font-weight: 600;
+}
+
+.markdown-content em,
+.markdown-content i {
+  color: #1f2937;
+  font-style: italic;
+}
+
+/* Links */
+.markdown-content a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.markdown-content a:hover {
+  color: #1d4ed8;
+}
+
+/* Code */
+.markdown-content code {
+  color: #1f2937;
+  background-color: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.markdown-content pre {
+  background-color: #f9fafb;
+  color: #1f2937;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.markdown-content pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: 0.875rem;
+}
+
+/* Blockquotes */
+.markdown-content blockquote {
+  color: #4b5563;
+  border-left: 4px solid #d1d5db;
+  padding-left: 1rem;
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+
+/* Tables */
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #d1d5db;
+  margin-bottom: 1rem;
+}
+
+.markdown-content th,
+.markdown-content td {
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 1rem;
+  text-align: left;
+}
+
+.markdown-content th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #111827;
+}
+
+.markdown-content td {
+  color: #374151;
+}
+
+/* Horizontal rules */
+.markdown-content hr {
+  border-color: #d1d5db;
+  margin: 1.5rem 0;
+}
+
+/* Images */
+.markdown-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  margin-bottom: 1rem;
+}
+
+/* Task lists */
+.markdown-content input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+/* Strikethrough */
+.markdown-content del {
+  color: #6b7280;
+  text-decoration: line-through;
+}
+
+/* Mark/highlight */
+.markdown-content mark {
+  background-color: #fef3c7;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+}
+
+/* Keyboard keys */
+.markdown-content kbd {
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.875rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* Definition lists */
+.markdown-content dl {
+  margin-bottom: 1rem;
+}
+
+.markdown-content dt {
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.markdown-content dd {
+  color: #374151;
+  margin-left: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Admonitions and callouts */
+.markdown-content .admonition {
+  border-left: 4px solid;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+
+.markdown-content .admonition.note {
+  background-color: #eff6ff;
+  border-color: #60a5fa;
+}
+
+.markdown-content .admonition.warning {
+  background-color: #fffbeb;
+  border-color: #fbbf24;
+}
+
+.markdown-content .admonition.error {
+  background-color: #fef2f2;
+  border-color: #f87171;
+}
+
+.markdown-content .admonition.success {
+  background-color: #f0fdf4;
+  border-color: #4ade80;
+}
+
+/* Custom resume-specific styles */
+.resume-analysis-content {
+  color: #374151;
+  line-height: 1.7;
+}
+
+.resume-analysis-content .strength-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.resume-analysis-content .strength-item::before {
+  content: "✓";
+  color: #10b981;
+  font-weight: bold;
+  margin-right: 0.5rem;
+  margin-top: 0.125rem;
+}
+
+.resume-analysis-content .improvement-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.resume-analysis-content .improvement-item::before {
+  content: "⚠";
+  color: #ef4444;
+  font-weight: bold;
+  margin-right: 0.5rem;
+  margin-top: 0.125rem;
+}
+
+.resume-analysis-content .recommendation-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.resume-analysis-content .recommendation-item::before {
+  content: "💡";
+  color: #f59e0b;
+  font-weight: bold;
+  margin-right: 0.5rem;
+  margin-top: 0.125rem;
+}

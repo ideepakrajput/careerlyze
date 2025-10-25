@@ -55,8 +55,8 @@ export default function Register() {
       // Store token and user data using auth context
       login(response.user, response.token);
 
-      // Redirect to home page
-      router.push("/");
+      // Redirect to dashboard
+      router.push("/dashboard");
     } catch (error: any) {
       setError(
         error.response?.data?.error || "Registration failed. Please try again."

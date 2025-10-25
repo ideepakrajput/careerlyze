@@ -64,6 +64,10 @@ export default function ResetPasswordPage() {
       await authAPI.resetPassword(email, otp, newPassword);
       setIsSuccess(true);
       setMessage("Password reset successfully");
+      // Redirect to login page after successful password reset
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
     } catch (error: any) {
       setMessage(
         error.response?.data?.error || "Something went wrong. Please try again."

@@ -9,16 +9,22 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@google/genai": "^1.27.0",
+    "@types/multer": "^2.0.0",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
     "crypto": "^1.0.1",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.548.0",
     "mongoose": "^8.19.2",
+    "multer": "^2.0.2",
     "next": "16.0.0",
     "nodemailer": "^7.0.10",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "react-markdown": "^10.1.0",
+    "react-pdf": "^10.2.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

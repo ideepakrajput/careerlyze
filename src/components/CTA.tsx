@@ -34,7 +34,7 @@ export default function CTA() {
           AI-powered resume analysis.
         </p>
         <Link
-          href="/register"
+          href="/resume-analyze"
           className="inline-flex items-center gap-2 bg-white text-blue-600 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
         >
           Start Free Analysis

@@ -122,6 +122,18 @@ export const authAPI = {
     const response = await api.put("/api/auth/profile", profileData);
     return response.data;
   },
+
+  // Change password
+  changePassword: async (
+    currentPassword: string,
+    newPassword: string
+  ): Promise<{ message: string }> => {
+    const response = await api.put("/api/auth/change-password", {
+      currentPassword,
+      newPassword,
+    });
+    return response.data;
+  },
 };
 
 // Utility functions for token management

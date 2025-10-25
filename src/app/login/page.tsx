@@ -64,8 +64,8 @@ export default function Login() {
         localStorage.removeItem("careerlyze_remember_me");
       }
 
-      // Redirect to home page
-      router.push("/");
+      // Redirect to dashboard
+      router.push("/dashboard");
     } catch (error: any) {
       setError(
         error.response?.data?.error || "Login failed. Please try again."
