@@ -298,7 +298,10 @@ export default function ResumeAnalysisDetail() {
                       <div>
                         <p className="text-sm text-gray-500">LinkedIn</p>
                         <a
-                          href={resume.analysisData.contactInfo.linkedin}
+                          href={
+                            "https://linkedin.com/in/" +
+                            resume.analysisData.contactInfo.linkedin
+                          }
                           target="_blank"
                           rel="noopener noreferrer"
                           className="font-medium text-blue-600 hover:text-blue-700"
@@ -314,7 +317,10 @@ export default function ResumeAnalysisDetail() {
                       <div>
                         <p className="text-sm text-gray-500">GitHub</p>
                         <a
-                          href={resume.analysisData.contactInfo.github}
+                          href={
+                            "https://github.com/" +
+                            resume.analysisData.contactInfo.github
+                          }
                           target="_blank"
                           rel="noopener noreferrer"
                           className="font-medium text-blue-600 hover:text-blue-700"
