@@ -140,6 +140,49 @@ export default function ResumeAnalysisDetail() {
     return "border-red-200";
   };
 
+  // Utility function to normalize social media URLs
+  const normalizeUrl = (url: string, platform: string) => {
+    if (!url) return "";
+
+    // Remove whitespace
+    url = url.trim();
+
+    // If it's already a full URL, return it
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+
+    // Remove common prefixes that users might include
+    const cleanUrl = url
+      .replace(/^(www\.)?/, '')
+      .replace(/^@/, '')
+      .replace(/^\//, '');
+
+    // Build the full URL based on platform
+    switch (platform) {
+      case 'linkedin':
+        // Handle linkedin.com/in/ prefix if already included
+        if (cleanUrl.startsWith('linkedin.com/in/')) {
+          return `https://${cleanUrl}`;
+        }
+        return `https://linkedin.com/in/${cleanUrl}`;
+
+      case 'github':
+        // Handle github.com prefix if already included
+        if (cleanUrl.startsWith('github.com/')) {
+          return `https://${cleanUrl}`;
+        }
+        return `https://github.com/${cleanUrl}`;
+
+      case 'website':
+        // For websites, add https:// if no protocol
+        return `https://${cleanUrl}`;
+
+      default:
+        return url;
+    }
+  };
+
   if (isLoading) {
     return (
       <ProtectedRoute>
@@ -266,117 +309,53 @@ export default function ResumeAnalysisDetail() {
             </div>
 
             {/* Contact Information */}
-            {resume.analysisData.contactInfo && (
-              <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
-                  <User className="h-6 w-6 mr-2 text-blue-600" />
-                  Contact Information
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {resume.analysisData.contactInfo.name && (
-                    <div className="flex items-center">
-                      <User className="h-5 w-5 text-gray-400 mr-3" />
-                      <div>
-                        <p className="text-sm text-gray-500">Name</p>
-                        <p className="font-medium text-gray-900">
-                          {resume.analysisData.contactInfo.name}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {resume.analysisData.contactInfo.email && (
-                    <div className="flex items-center">
-                      <Mail className="h-5 w-5 text-gray-400 mr-3" />
-                      <div>
-                        <p className="text-sm text-gray-500">Email</p>
-                        <a
-                          href={`mailto:${resume.analysisData.contactInfo.email}`}
-                          className="font-medium text-blue-600 hover:text-blue-700"
-                        >
-                          {resume.analysisData.contactInfo.email}
-                        </a>
-                      </div>
-                    </div>
-                  )}
-                  {resume.analysisData.contactInfo.phone && (
-                    <div className="flex items-center">
-                      <Phone className="h-5 w-5 text-gray-400 mr-3" />
-                      <div>
-                        <p className="text-sm text-gray-500">Phone</p>
-                        <a
-                          href={`tel:${resume.analysisData.contactInfo.phone}`}
-                          className="font-medium text-blue-600 hover:text-blue-700"
-                        >
-                          {resume.analysisData.contactInfo.phone}
-                        </a>
-                      </div>
-                    </div>
-                  )}
-                  {resume.analysisData.contactInfo.location && (
-                    <div className="flex items-center">
-                      <MapPin className="h-5 w-5 text-gray-400 mr-3" />
-                      <div>
-                        <p className="text-sm text-gray-500">Location</p>
-                        <p className="font-medium text-gray-900">
-                          {resume.analysisData.contactInfo.location}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {resume.analysisData.contactInfo.linkedin && (
-                    <div className="flex items-center">
-                      <Linkedin className="h-5 w-5 text-gray-400 mr-3" />
-                      <div>
-                        <p className="text-sm text-gray-500">LinkedIn</p>
-                        <a
-                          href={
-                            "https://linkedin.com/in/" +
-                            resume.analysisData.contactInfo.linkedin
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-medium text-blue-600 hover:text-blue-700"
-                        >
-                          View Profile
-                        </a>
-                      </div>
-                    </div>
-                  )}
-                  {resume.analysisData.contactInfo.github && (
-                    <div className="flex items-center">
-                      <Github className="h-5 w-5 text-gray-400 mr-3" />
-                      <div>
-                        <p className="text-sm text-gray-500">GitHub</p>
-                        <a
-                          href={
-                            "https://github.com/" +
-                            resume.analysisData.contactInfo.github
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-medium text-blue-600 hover:text-blue-700"
-                        >
-                          View Profile
-                        </a>
-                      </div>
-                    </div>
-                  )}
-                  {resume.analysisData.contactInfo.website && (
-                    <div className="flex items-center">
-                      <Globe className="h-5 w-5 text-gray-400 mr-3" />
-                      <div>
-                        <p className="text-sm text-gray-500">Website</p>
-                        <a
-                          href={resume.analysisData.contactInfo.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-medium text-blue-600 hover:text-blue-700"
-                        >
-                          Visit Website
-                        </a>
-                      </div>
-                    </div>
-                  )}
+            {resume.analysisData.contactInfo.linkedin && (
+              <div className="flex items-center">
+                <Linkedin className="h-5 w-5 text-gray-400 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">LinkedIn</p>
+                  <a
+                    href={normalizeUrl(resume.analysisData.contactInfo.linkedin, 'linkedin')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-blue-600 hover:text-blue-700"
+                  >
+                    View Profile
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {resume.analysisData.contactInfo.github && (
+              <div className="flex items-center">
+                <Github className="h-5 w-5 text-gray-400 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">GitHub</p>
+                  <a
+                    href={normalizeUrl(resume.analysisData.contactInfo.github, 'github')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-blue-600 hover:text-blue-700"
+                  >
+                    View Profile
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {resume.analysisData.contactInfo.website && (
+              <div className="flex items-center">
+                <Globe className="h-5 w-5 text-gray-400 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">Website</p>
+                  <a
+                    href={normalizeUrl(resume.analysisData.contactInfo.website, 'website')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-blue-600 hover:text-blue-700"
+                  >
+                    Visit Website
+                  </a>
                 </div>
               </div>
             )}
@@ -576,10 +555,10 @@ export default function ResumeAnalysisDetail() {
               </button>
             </div>
           </div>
-        </div>
+        </div >
 
         <Footer />
-      </div>
-    </ProtectedRoute>
+      </div >
+    </ProtectedRoute >
   );
 }
