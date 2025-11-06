@@ -1,16 +1,31 @@
 import axios from "axios";
 
+// Get base URL dynamically - use current origin if available (browser), otherwise use env var
+const getBaseURL = () => {
+  // In browser, use current origin to support both domains
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+  // Server-side fallback
+  return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+};
+
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  baseURL: getBaseURL(),
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token and set dynamic baseURL
 api.interceptors.request.use(
   (config) => {
+    // Update baseURL dynamically to support both domains
+    if (typeof window !== "undefined") {
+      config.baseURL = window.location.origin;
+    }
+    
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
