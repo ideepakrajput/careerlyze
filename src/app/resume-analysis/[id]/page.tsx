@@ -54,6 +54,7 @@ interface AnalysisData {
     github: string;
     website: string;
   };
+  updatedResume?: string;
 }
 
 interface Resume {
@@ -77,6 +78,8 @@ export default function ResumeAnalysisDetail() {
   const [pdfUrl, setPdfUrl] = useState<string>("");
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfError, setPdfError] = useState<string>("");
+  const [showUpdatedResume, setShowUpdatedResume] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   useEffect(() => {
     const loadResume = async () => {
@@ -138,6 +141,45 @@ export default function ResumeAnalysisDetail() {
     if (score >= 80) return "border-green-200";
     if (score >= 60) return "border-yellow-200";
     return "border-red-200";
+  };
+
+  // Check if user has access to updated resume feature
+  const ALLOWED_EMAILS = ["contact.deepakrajput@gmail.com"];
+  const hasAccessToUpdatedResume = user && ALLOWED_EMAILS.includes(user.email);
+
+  // Download updated resume PDF
+  const downloadUpdatedResumePdf = async () => {
+    if (!resume?._id) return;
+
+    setDownloadingPdf(true);
+    try {
+      const token = tokenUtils.getToken();
+      const response = await fetch(`/api/resume-analyze/${resume._id}/download-pdf`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `updated-resume-${resume.jobTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${resume._id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || "Failed to download PDF");
+      }
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      alert("Failed to download PDF. Please try again.");
+    } finally {
+      setDownloadingPdf(false);
+    }
   };
 
   // Utility function to normalize social media URLs
@@ -589,7 +631,7 @@ export default function ResumeAnalysisDetail() {
             </div>
 
             {/* Detailed Analysis */}
-            <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
               <h3 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
                 <BarChart3 className="h-6 w-6 mr-2 text-blue-600" />
                 Detailed Analysis
@@ -600,6 +642,72 @@ export default function ResumeAnalysisDetail() {
                 </ReactMarkdown>
               </div>
             </div>
+
+            {/* Updated Resume Section - Only for authorized users */}
+            {hasAccessToUpdatedResume && resume.analysisData.updatedResume && (
+              <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-semibold text-gray-900 flex items-center">
+                    <TrendingUp className="h-6 w-6 mr-2 text-green-600" />
+                    Updated Resume (Optimized)
+                  </h3>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowUpdatedResume(!showUpdatedResume)}
+                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      {showUpdatedResume ? (
+                        <>
+                          <EyeOff className="h-4 w-4 mr-2" />
+                          Hide Markdown
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Markdown
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={downloadUpdatedResumePdf}
+                      disabled={downloadingPdf}
+                      className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {downloadingPdf ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Downloading...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4 mr-2" />
+                          Download PDF
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {showUpdatedResume && (
+                  <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                    <div className="markdown-content prose prose-sm max-w-none">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {resume.analysisData.updatedResume}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+                )}
+
+                {!showUpdatedResume && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-blue-800 text-sm">
+                      <strong>Note:</strong> This is an AI-optimized version of your resume based on the analysis. 
+                      Click "View Markdown" to see the updated content or "Download PDF" to get a formatted PDF version.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">

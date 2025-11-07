@@ -29,6 +29,7 @@ export interface IResume extends Document {
       github: string;
       website: string;
     };
+    updatedResume?: string;
   };
   createdAt: Date;
   updatedAt: Date;
@@ -140,6 +141,9 @@ const ResumeSchema = new Schema<IResume>(
           type: String,
           default: "",
         },
+      },
+      updatedResume: {
+        type: String,
       },
     },
   },

@@ -5,6 +5,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import connectDB from "@/lib/mongodb";
 import Resume from "@/models/Resume";
+import User from "@/models/User";
 import { verifyToken } from "@/lib/jwt";
 
 // Configure multer for file upload
@@ -236,6 +237,98 @@ export async function POST(req: NextRequest) {
 
       console.log("Resume saved with ID:", resume._id);
       console.log("Resume LinkedIn:", structuredData.contactInfo?.linkedin);
+
+      // Check if user has access to updated resume feature
+      const user = await User.findById(decoded.userId);
+      const ALLOWED_EMAILS = ["contact.deepakrajput@gmail.com"];
+      
+      if (user && ALLOWED_EMAILS.includes(user.email)) {
+        try {
+          // Read the original resume.md file
+          const resumeMdPath = path.join(process.cwd(), "public", "resume.md");
+          let originalResumeMarkdown = "";
+          try {
+            originalResumeMarkdown = await fs.readFile(resumeMdPath, "utf-8");
+          } catch (readError) {
+            console.warn("Could not read resume.md file:", readError);
+            // Continue without the original resume if file doesn't exist
+          }
+
+          // Generate updated resume markdown using AI
+          const resumeMarkdownPrompt = `You are tasked with updating an existing resume in markdown format based on the resume analysis and job requirements.
+
+ORIGINAL RESUME (resume.md):
+${originalResumeMarkdown ? "```markdown\n" + originalResumeMarkdown + "\n```" : "No original resume provided. Generate a new resume."}
+
+JOB REQUIREMENTS:
+Job Title: "${jobTitle}"
+Job Description: ${jobDescription}
+
+RESUME ANALYSIS DATA:
+- ATS Score: ${structuredData.atsScore}/100
+- Strengths: ${structuredData.strengths.length > 0 ? structuredData.strengths.join(", ") : "None identified"}
+- Improvement Areas: ${structuredData.improvementAreas.length > 0 ? structuredData.improvementAreas.join(", ") : "None identified"}
+- Matched Keywords: ${structuredData.keywordMatch.matched.length > 0 ? structuredData.keywordMatch.matched.join(", ") : "None"}
+- Missing Keywords: ${structuredData.keywordMatch.missing.length > 0 ? structuredData.keywordMatch.missing.join(", ") : "None"}
+- Recommendations: ${structuredData.recommendations.length > 0 ? structuredData.recommendations.join("; ") : "None"}
+
+CONTACT INFORMATION (use this if different from original):
+- Name: ${structuredData.contactInfo.name || "Keep original"}
+- Email: ${structuredData.contactInfo.email || "Keep original"}
+- Phone: ${structuredData.contactInfo.phone || "Keep original"}
+- Location: ${structuredData.contactInfo.location || "Keep original"}
+- LinkedIn: ${structuredData.contactInfo.linkedin || "Keep original"}
+- GitHub: ${structuredData.contactInfo.github || "Keep original"}
+- Website: ${structuredData.contactInfo.website || "Keep original"}
+
+TASK:
+Update the original resume.md according to the analysisData. Your updated resume should:
+1. Keep the same structure and format as the original resume
+2. Incorporate missing keywords naturally into existing sections
+3. Enhance strengths that are relevant to the job
+4. Address improvement areas by refining content
+5. Optimize bullet points and descriptions for the specific job title and description
+6. Maintain all original information unless it conflicts with improvements
+7. Use the contact information from analysisData if provided, otherwise keep original
+8. Ensure the resume is ATS-optimized while maintaining readability
+
+Return ONLY the updated markdown content, no explanations or code blocks. The output should be a complete, well-formatted resume in markdown.`;
+
+          const markdownResponse = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: [
+              {
+                text: resumeMarkdownPrompt,
+              },
+              {
+                fileData: {
+                  mimeType: "application/pdf",
+                  fileUri: uploadedFile.uri!,
+                },
+              },
+            ],
+          });
+
+          let updatedResumeMarkdown = markdownResponse.text || "";
+
+          // Clean up markdown if wrapped in code blocks
+          if (updatedResumeMarkdown.includes("```")) {
+            updatedResumeMarkdown = updatedResumeMarkdown
+              .replace(/```markdown\n?/g, "")
+              .replace(/```\n?/g, "")
+              .trim();
+          }
+
+          // Update resume with markdown
+          resume.analysisData.updatedResume = updatedResumeMarkdown;
+          await resume.save();
+
+          console.log("Updated resume markdown generated and saved");
+        } catch (markdownError) {
+          console.error("Error generating updated resume markdown:", markdownError);
+          // Continue even if markdown generation fails
+        }
+      }
 
       // Clean up uploaded file from Gemini (optional)
       try {
