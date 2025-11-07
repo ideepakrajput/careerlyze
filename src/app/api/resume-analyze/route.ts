@@ -138,11 +138,16 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      // Check if uploadedFile has required properties
+      if (!uploadedFile || !uploadedFile.name || !uploadedFile.uri) {
+        throw new Error("Uploaded file is missing required properties");
+      }
+
       // Wait for file processing
-      let fileStatus = await ai.files.get({ name: uploadedFile.name! });
+      let fileStatus = await ai.files.get({ name: uploadedFile.name });
       while (fileStatus.state === "PROCESSING") {
         await new Promise((resolve) => setTimeout(resolve, 2000));
-        fileStatus = await ai.files.get({ name: uploadedFile.name! });
+        fileStatus = await ai.files.get({ name: uploadedFile.name });
       }
 
       if (fileStatus.state === "FAILED") {
@@ -165,7 +170,7 @@ export async function POST(req: NextRequest) {
           {
             fileData: {
               mimeType: "application/pdf",
-              fileUri: uploadedFile.uri!,
+              fileUri: uploadedFile.uri,
             },
           },
         ],
@@ -294,6 +299,11 @@ Update the original resume.md according to the analysisData. Your updated resume
 
 Return ONLY the updated markdown content, no explanations or code blocks. The output should be a complete, well-formatted resume in markdown.`;
 
+          // Check if uploadedFile and uri exist before using
+          if (!uploadedFile || !uploadedFile.uri) {
+            throw new Error("Uploaded file or URI is missing");
+          }
+
           const markdownResponse = await ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: [
@@ -303,7 +313,7 @@ Return ONLY the updated markdown content, no explanations or code blocks. The ou
               {
                 fileData: {
                   mimeType: "application/pdf",
-                  fileUri: uploadedFile.uri!,
+                  fileUri: uploadedFile.uri,
                 },
               },
             ],
@@ -332,7 +342,9 @@ Return ONLY the updated markdown content, no explanations or code blocks. The ou
 
       // Clean up uploaded file from Gemini (optional)
       try {
-        await ai.files.delete({ name: uploadedFile.name! });
+        if (uploadedFile && uploadedFile.name) {
+          await ai.files.delete({ name: uploadedFile.name });
+        }
       } catch (deleteError) {
         console.warn("Failed to delete file from Gemini:", deleteError);
       }

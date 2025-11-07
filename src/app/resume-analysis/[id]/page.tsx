@@ -32,6 +32,10 @@ import {
   Eye,
   EyeOff,
   Briefcase,
+  Copy,
+  Edit,
+  Save,
+  X,
 } from "lucide-react";
 
 interface AnalysisData {
@@ -80,6 +84,10 @@ export default function ResumeAnalysisDetail() {
   const [pdfError, setPdfError] = useState<string>("");
   const [showUpdatedResume, setShowUpdatedResume] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [isEditingMarkdown, setIsEditingMarkdown] = useState(false);
+  const [editedMarkdown, setEditedMarkdown] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const loadResume = async () => {
@@ -147,6 +155,72 @@ export default function ResumeAnalysisDetail() {
   const ALLOWED_EMAILS = ["contact.deepakrajput@gmail.com"];
   const hasAccessToUpdatedResume = user && ALLOWED_EMAILS.includes(user.email);
 
+  // Copy markdown to clipboard
+  const copyMarkdown = async () => {
+    if (!resume?.analysisData?.updatedResume) return;
+
+    try {
+      await navigator.clipboard.writeText(resume.analysisData.updatedResume);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error("Failed to copy:", error);
+      alert("Failed to copy to clipboard");
+    }
+  };
+
+  // Start editing markdown
+  const startEditing = () => {
+    if (resume?.analysisData?.updatedResume) {
+      setEditedMarkdown(resume.analysisData.updatedResume);
+      setIsEditingMarkdown(true);
+    }
+  };
+
+  // Cancel editing
+  const cancelEditing = () => {
+    setIsEditingMarkdown(false);
+    setEditedMarkdown("");
+  };
+
+  // Update markdown
+  const updateMarkdown = async () => {
+    if (!resume?._id || !editedMarkdown.trim()) return;
+
+    setIsUpdating(true);
+    try {
+      const token = tokenUtils.getToken();
+      const response = await fetch(`/api/resume-analyze/${resume._id}/update-markdown`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ updatedResume: editedMarkdown }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Update local state
+        if (resume) {
+          resume.analysisData.updatedResume = editedMarkdown;
+          setResume({ ...resume });
+        }
+        setIsEditingMarkdown(false);
+        setEditedMarkdown("");
+        alert("Resume markdown updated successfully!");
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || "Failed to update markdown");
+      }
+    } catch (error) {
+      console.error("Error updating markdown:", error);
+      alert("Failed to update markdown. Please try again.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   // Download updated resume PDF
   const downloadUpdatedResumePdf = async () => {
     if (!resume?._id) return;
@@ -165,7 +239,25 @@ export default function ResumeAnalysisDetail() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `updated-resume-${resume.jobTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${resume._id}.pdf`;
+
+        // Get filename from Content-Disposition header or use default format
+        const contentDisposition = response.headers.get("Content-Disposition");
+        let filename = `Resume - ${resume.jobTitle}.pdf`;
+
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+          if (filenameMatch) {
+            filename = filenameMatch[1];
+          }
+        } else {
+          // Fallback: Use contact name if available
+          const contactName = resume.analysisData?.contactInfo?.name || "Resume";
+          const sanitizedName = contactName.replace(/[^a-z0-9\s-]/gi, '').trim();
+          const sanitizedJobTitle = resume.jobTitle.replace(/[^a-z0-9\s-]/gi, '').trim();
+          filename = `${sanitizedName} - ${sanitizedJobTitle}.pdf`;
+        }
+
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -651,26 +743,54 @@ export default function ResumeAnalysisDetail() {
                     <TrendingUp className="h-6 w-6 mr-2 text-green-600" />
                     Updated Resume (Optimized)
                   </h3>
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 flex-wrap">
                     <button
-                      onClick={() => setShowUpdatedResume(!showUpdatedResume)}
-                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      onClick={copyMarkdown}
+                      className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                      title="Copy markdown to clipboard"
                     >
-                      {showUpdatedResume ? (
+                      {copied ? (
                         <>
-                          <EyeOff className="h-4 w-4 mr-2" />
-                          Hide Markdown
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Copied!
                         </>
                       ) : (
                         <>
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Markdown
+                          <Copy className="h-4 w-4 mr-2" />
+                          Copy
                         </>
                       )}
                     </button>
+                    {!isEditingMarkdown && (
+                      <>
+                        <button
+                          onClick={startEditing}
+                          className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => setShowUpdatedResume(!showUpdatedResume)}
+                          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          {showUpdatedResume ? (
+                            <>
+                              <EyeOff className="h-4 w-4 mr-2" />
+                              Hide Preview
+                            </>
+                          ) : (
+                            <>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Preview
+                            </>
+                          )}
+                        </button>
+                      </>
+                    )}
                     <button
                       onClick={downloadUpdatedResumePdf}
-                      disabled={downloadingPdf}
+                      disabled={downloadingPdf || isEditingMarkdown}
                       className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {downloadingPdf ? (
@@ -688,7 +808,63 @@ export default function ResumeAnalysisDetail() {
                   </div>
                 </div>
 
-                {showUpdatedResume && (
+                {isEditingMarkdown ? (
+                  <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-7xl h-full max-h-[90vh] flex flex-col">
+                      <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                        <h3 className="text-xl font-semibold text-gray-900">
+                          Edit Markdown
+                        </h3>
+                        <button
+                          onClick={cancelEditing}
+                          disabled={isUpdating}
+                          className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
+                      </div>
+                      <div className="flex-1 p-6 overflow-hidden">
+                        <textarea
+                          value={editedMarkdown}
+                          onChange={(e) => setEditedMarkdown(e.target.value)}
+                          className="appearance-none relative block w-full h-full p-4 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all duration-200 hover:border-blue-400 bg-white font-mono resize-none"
+                          placeholder="Edit your resume markdown here..."
+                        />
+                      </div>
+                      <div className="flex items-center justify-between p-6 border-t border-gray-200">
+                        <p className="text-xs text-gray-500">
+                          Make your changes and click "Save" to update the resume.
+                        </p>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={cancelEditing}
+                            disabled={isUpdating}
+                            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={updateMarkdown}
+                            disabled={isUpdating}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                          >
+                            {isUpdating ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                Saving...
+                              </>
+                            ) : (
+                              <>
+                                <Save className="h-4 w-4 mr-2" />
+                                Save
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : showUpdatedResume ? (
                   <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
                     <div className="markdown-content prose prose-sm max-w-none">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -696,13 +872,11 @@ export default function ResumeAnalysisDetail() {
                       </ReactMarkdown>
                     </div>
                   </div>
-                )}
-
-                {!showUpdatedResume && (
+                ) : (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <p className="text-blue-800 text-sm">
-                      <strong>Note:</strong> This is an AI-optimized version of your resume based on the analysis. 
-                      Click "View Markdown" to see the updated content or "Download PDF" to get a formatted PDF version.
+                      <strong>Note:</strong> This is an AI-optimized version of your resume based on the analysis.
+                      Click "Copy" to copy the markdown, "Edit" to edit it directly, "Preview" to see the rendered version, or "Download PDF" to get a formatted PDF version.
                     </p>
                   </div>
                 )}

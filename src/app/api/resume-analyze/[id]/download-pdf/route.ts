@@ -65,7 +65,21 @@ export async function GET(
     }
 
     // Convert markdown to HTML
-    const htmlContent = marked.parse(resume.analysisData.updatedResume);
+    let htmlContent = marked.parse(resume.analysisData.updatedResume);
+
+    // Handle if marked.parse returns a Promise
+    if (htmlContent instanceof Promise) {
+      htmlContent = await htmlContent;
+    }
+
+    // Ensure htmlContent is a string
+    htmlContent = String(htmlContent);
+
+    // Get name from contact info for filename
+    const contactName = resume.analysisData?.contactInfo?.name || "Resume";
+
+    // Remove hr tags after sections (lines after end of sections)
+    htmlContent = htmlContent.replace(/<hr[^>]*>\s*(?=<h[1-3]|$)/gi, '');
 
     // Create a complete HTML document with styling
     const fullHtml = `
@@ -77,44 +91,61 @@ export async function GET(
     <title>Resume - ${resume.jobTitle}</title>
     <style>
         @page {
-            margin: 1in;
-            size: letter;
+            margin: 0.75in;
+            size: A4;
         }
         body {
-            font-family: 'Georgia', 'Times New Roman', serif;
-            line-height: 1.6;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.3;
             color: #333;
-            max-width: 8.5in;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
         }
         h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 5px;
-        }
-        h2 {
             font-size: 18px;
-            margin-top: 20px;
-            margin-bottom: 10px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            margin-top: 16px;
             border-bottom: 1px solid #666;
             padding-bottom: 3px;
+            line-height: 1.2;
+        }
+        h2 {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 14px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #666;
+            padding-bottom: 3px;
+            line-height: 1.2;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #ccc;
+            margin: 12px 0;
         }
         h3 {
-            font-size: 16px;
-            margin-top: 15px;
-            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 12px;
+            margin-bottom: 6px;
+            line-height: 1.2;
         }
         p {
-            margin: 8px 0;
+            font-size: 14px;
+            margin: 4px 0;
+            line-height: 1.3;
         }
         ul, ol {
-            margin: 10px 0;
+            margin: 6px 0;
             padding-left: 25px;
+            line-height: 1.3;
         }
         li {
-            margin: 5px 0;
+            font-size: 14px;
+            margin: 3px 0;
+            line-height: 1.3;
         }
         strong {
             font-weight: bold;
@@ -122,11 +153,6 @@ export async function GET(
         a {
             color: #0066cc;
             text-decoration: none;
-        }
-        hr {
-            border: none;
-            border-top: 1px solid #ccc;
-            margin: 20px 0;
         }
         @media print {
             body {
@@ -146,47 +172,85 @@ export async function GET(
     try {
       browser = await puppeteer.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--no-first-run',
+          '--no-zygote',
+          '--disable-gpu',
+          '--disable-software-rasterizer',
+          '--disable-extensions',
+          '--disable-background-timer-throttling',
+          '--disable-backgrounding-occluded-windows',
+          '--disable-renderer-backgrounding',
+          '--disable-features=TranslateUI',
+          '--disable-ipc-flooding-protection',
+        ],
+        ignoreDefaultArgs: ['--disable-extensions'],
       });
 
       const page = await browser.newPage();
       await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
 
-      // Generate PDF
+      // Generate PDF with A4 size
       const pdfBuffer = await page.pdf({
-        format: 'Letter',
+        format: 'A4',
         margin: {
-          top: '1in',
-          right: '1in',
-          bottom: '1in',
-          left: '1in',
+          top: '0.75in',
+          right: '0.75in',
+          bottom: '0.75in',
+          left: '0.75in',
         },
         printBackground: true,
       });
 
       await browser.close();
 
-      // Return PDF file
-      const filename = `updated-resume-${resume.jobTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${id}.pdf`;
+      // Return PDF file - Format: "Deepak Kumar - Job title.pdf" (no trailing underscore)
+      const sanitizedName = contactName.replace(/[^a-z0-9\s-]/gi, '').trim();
+      const sanitizedJobTitle = resume.jobTitle.replace(/[^a-z0-9\s-]/gi, '').trim();
+      const filename = `${sanitizedName} - ${sanitizedJobTitle}.pdf`;
 
       // Convert buffer to ensure proper type for NextResponse
       const buffer = Buffer.from(pdfBuffer);
 
+      // Encode filename properly for Content-Disposition header
+      const encodedFilename = encodeURIComponent(filename);
+
       return new NextResponse(buffer, {
         headers: {
           "Content-Type": "application/pdf",
-          "Content-Disposition": `attachment; filename="${filename}"`,
+          "Content-Disposition": `attachment; filename*=UTF-8''${encodedFilename}`,
           "Cache-Control": "no-cache",
         },
       });
-    } catch (pdfError) {
+    } catch (pdfError: any) {
       console.error("PDF generation error:", pdfError);
       if (browser) {
-        await browser.close();
+        try {
+          await browser.close();
+        } catch (closeError) {
+          console.error("Error closing browser:", closeError);
+        }
       }
+
+      // Check if it's a library dependency error
+      const errorMessage = pdfError?.message || String(pdfError);
+      if (errorMessage.includes("shared libraries") || errorMessage.includes("libatk")) {
+        return NextResponse.json(
+          {
+            error: "PDF generation failed due to missing system dependencies. Please install required libraries: apt-get install -y libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2",
+          },
+          { status: 500 }
+        );
+      }
+
       return NextResponse.json(
         {
           error: "Failed to generate PDF. Please try again.",
+          details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
         },
         { status: 500 }
       );
