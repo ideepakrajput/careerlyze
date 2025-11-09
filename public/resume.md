@@ -1,8 +1,9 @@
 # **DEEPAK KUMAR**
+
 ## **Full Stack Developer**
 
-**Phone:** +91 7254880990  
-**Email:** deepakrajput.cu@gmail.com  
+**Phone:** [+91 7254880990](tel:+917254880990)  
+**Email:** [deepakrajput.cu@gmail.com](mailto:deepakrajput.cu@gmail.com)  
 **LinkedIn:** [linkedin.com/in/ideepakrajput](https://linkedin.com/in/ideepakrajput)  
 **GitHub:** [github.com/ideepakrajput](https://github.com/ideepakrajput)  
 **Portfolio:** [ideepakrajput.in](https://ideepakrajput.in)
@@ -42,6 +43,7 @@ Full Stack Developer with 2+ years of experience in MERN Stack and Mobile App De
 ## **PROFESSIONAL EXPERIENCE**
 
 ### **Software Developer | Sheopal's Pvt Ltd**
+
 **February 2025 - Present**
 
 - **Website and CRM Development:** Improved the main company website and optimized CRM functionalities for better user experience.
@@ -53,6 +55,7 @@ Full Stack Developer with 2+ years of experience in MERN Stack and Mobile App De
 - **Payment Status Synchronization:** Developed webhooks to track payment statuses and synchronize captured payments with the system in real time.
 
 ### **Software Developer | PIP Trade, Delhi**
+
 **February 2024 - February 2025**
 
 - **Spearheaded Backend Development:** Led the development of the PIP Trade Forex trading platform using Node.js, Express, Socket.io, and MongoDB, ensuring a robust and scalable architecture.
@@ -63,6 +66,7 @@ Full Stack Developer with 2+ years of experience in MERN Stack and Mobile App De
 - **Automated Database Backups:** Created and implemented shell scripts for real-time and daily database backups, ensuring data integrity and disaster recovery.
 
 ### **MERN Stack Developer | Northline**
+
 **August 2023 - February 2024**
 
 - **Full-Stack Development Leadership:** Led both frontend and backend development for the Tring-Tring application, ensuring a seamless user experience.
@@ -121,7 +125,7 @@ Full Stack Developer with 2+ years of experience in MERN Stack and Mobile App De
 
 ### **Tring Tring Mobile App**
 
-**APK:** [drive.google.com/file/d/11SJjNSqN-_hhoP71YFOvvz-P6UYD4zOb/view](https://drive.google.com/file/d/11SJjNSqN-_hhoP71YFOvvz-P6UYD4zOb/view)  
+**APK:** [drive.google.com/file/d/11SJjNSqN-\_hhoP71YFOvvz-P6UYD4zOb/view](https://drive.google.com/file/d/11SJjNSqN-_hhoP71YFOvvz-P6UYD4zOb/view)  
 **Technologies:** React Native
 
 - Designed and developed a responsive, professional website for Tring-Tring
