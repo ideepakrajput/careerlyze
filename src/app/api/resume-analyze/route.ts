@@ -37,8 +37,10 @@ const upload = multer({
 // Initialize Google AI
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
-// Configure route to allow longer execution times (up to 10 minutes)
-export const maxDuration = 600; // 10 minutes in seconds
+// Configure route to allow longer execution times
+// Reduced to 90 seconds to stay under Cloudflare's 100s timeout
+// Main response returns immediately, markdown generates in background
+export const maxDuration = 90; // 90 seconds (under Cloudflare's 100s limit)
 export const runtime = "nodejs";
 
 // Guard rails for structured output
@@ -276,14 +278,36 @@ export async function POST(req: NextRequest) {
       console.log("Resume saved with ID:", resume._id);
       console.log("Resume LinkedIn:", structuredData.contactInfo?.linkedin);
 
-      // Generate markdown synchronously - wait for all tasks to complete
-      let updatedResumeMarkdown = null;
-      try {
-        const user = await User.findById(decoded.userId);
-        const ALLOWED_EMAILS = ["contact.deepakrajput@gmail.com"];
+      // Return response immediately to avoid Cloudflare timeout
+      // Markdown generation will happen in background
+      const apiResponse = NextResponse.json({
+        success: true,
+        data: structuredData,
+        resumeId: resume._id,
+        markdownGenerating: false, // Will be true if markdown generation starts
+      });
 
-        if (user && ALLOWED_EMAILS.includes(user.email)) {
-          console.log("Generating updated resume markdown...");
+      // Generate markdown asynchronously in background (non-blocking)
+      // This prevents Cloudflare timeout while still generating markdown
+      (async () => {
+        try {
+          const user = await User.findById(decoded.userId);
+          const ALLOWED_EMAILS = ["contact.deepakrajput@gmail.com"];
+
+          if (!user || !ALLOWED_EMAILS.includes(user.email)) {
+            // Clean up file immediately if user doesn't have access
+            try {
+              if (uploadedFile && uploadedFile.name) {
+                await ai.files.delete({ name: uploadedFile.name });
+                console.log("Cleaned up uploaded file from Gemini");
+              }
+            } catch (deleteError) {
+              console.warn("Failed to delete file from Gemini:", deleteError);
+            }
+            return;
+          }
+
+          console.log("Generating updated resume markdown in background...");
 
           // Read the original resume.md file
           const resumeMdPath = path.join(process.cwd(), "public", "resume.md");
@@ -379,7 +403,7 @@ Return ONLY the updated markdown content, no explanations or code blocks. The ou
             ],
           });
 
-          updatedResumeMarkdown = markdownResponse.text || "";
+          let updatedResumeMarkdown = markdownResponse.text || "";
 
           // Clean up markdown if wrapped in code blocks
           if (updatedResumeMarkdown.includes("```")) {
@@ -390,37 +414,37 @@ Return ONLY the updated markdown content, no explanations or code blocks. The ou
           }
 
           // Update resume with markdown
-          resume.analysisData.updatedResume = updatedResumeMarkdown;
-          await resume.save();
-
-          console.log("Updated resume markdown generated and saved");
+          await connectDB();
+          const updatedResume = await Resume.findById(resume._id);
+          if (updatedResume) {
+            updatedResume.analysisData.updatedResume = updatedResumeMarkdown;
+            await updatedResume.save();
+            console.log("Updated resume markdown generated and saved");
+          }
+        } catch (markdownError) {
+          console.error(
+            "Error generating updated resume markdown:",
+            markdownError
+          );
+          // Continue even if markdown generation fails
+        } finally {
+          // Clean up uploaded file from Gemini after markdown generation (or if it fails)
+          try {
+            if (uploadedFile && uploadedFile.name) {
+              await ai.files.delete({ name: uploadedFile.name });
+              console.log("Cleaned up uploaded file from Gemini");
+            }
+          } catch (deleteError) {
+            console.warn("Failed to delete file from Gemini:", deleteError);
+          }
         }
-      } catch (markdownError) {
-        console.error(
-          "Error generating updated resume markdown:",
-          markdownError
-        );
-        // Continue even if markdown generation fails - don't block the response
-      }
+      })();
 
-      // Clean up uploaded file from Gemini
-      try {
-        if (uploadedFile && uploadedFile.name) {
-          await ai.files.delete({ name: uploadedFile.name });
-          console.log("Cleaned up uploaded file from Gemini");
-        }
-      } catch (deleteError) {
-        console.warn("Failed to delete file from Gemini:", deleteError);
-      }
-
-      // Return response only after all tasks are complete
-      console.log("All tasks completed, returning response");
-      return NextResponse.json({
-        success: true,
-        data: structuredData,
-        resumeId: resume._id,
-        markdownGenerated: updatedResumeMarkdown !== null,
-      });
+      // Return response immediately (before markdown generation completes)
+      console.log(
+        "Returning response immediately, markdown generating in background"
+      );
+      return apiResponse;
     } catch (aiError: any) {
       console.error("AI processing error:", aiError);
       return NextResponse.json(
