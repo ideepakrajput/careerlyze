@@ -37,6 +37,10 @@ const upload = multer({
 // Initialize Google AI
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
+// Configure route to allow longer execution times (up to 10 minutes)
+export const maxDuration = 600; // 10 minutes in seconds
+export const runtime = "nodejs";
+
 // Guard rails for structured output
 const guardRails = {
   structuredJsonOutput: `Return ONLY valid JSON in this exact format:
@@ -74,6 +78,38 @@ const runMiddleware = (req: NextRequest, res: any) => {
       return resolve(result);
     });
   });
+};
+
+// Helper function to wait for file processing (waits indefinitely until complete)
+const waitForFileProcessing = async (
+  ai: GoogleGenAI,
+  fileName: string,
+  checkInterval: number = 2000 // Check every 2 seconds
+): Promise<void> => {
+  let fileStatus = await ai.files.get({ name: fileName });
+  let attempts = 0;
+  const maxAttempts = 300; // Maximum 10 minutes (300 * 2 seconds)
+
+  while (fileStatus.state === "PROCESSING") {
+    attempts++;
+    if (attempts > maxAttempts) {
+      throw new Error(
+        "File processing is taking too long. Please try again with a smaller file."
+      );
+    }
+
+    console.log(
+      `Waiting for file processing... (attempt ${attempts}/${maxAttempts})`
+    );
+    await new Promise((resolve) => setTimeout(resolve, checkInterval));
+    fileStatus = await ai.files.get({ name: fileName });
+  }
+
+  if (fileStatus.state === "FAILED") {
+    throw new Error("File processing failed");
+  }
+
+  console.log("File processing completed successfully");
 };
 
 export async function POST(req: NextRequest) {
@@ -129,6 +165,7 @@ export async function POST(req: NextRequest) {
     await fs.writeFile(filePath, buffer);
 
     try {
+      console.log("Starting file upload to Gemini...");
       // Upload file to Gemini using File API
       const uploadedFile = await ai.files.upload({
         file: filePath,
@@ -143,18 +180,12 @@ export async function POST(req: NextRequest) {
         throw new Error("Uploaded file is missing required properties");
       }
 
-      // Wait for file processing
-      let fileStatus = await ai.files.get({ name: uploadedFile.name });
-      while (fileStatus.state === "PROCESSING") {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        fileStatus = await ai.files.get({ name: uploadedFile.name });
-      }
+      console.log("File uploaded, waiting for processing...");
+      // Wait for file processing (will wait up to 10 minutes)
+      await waitForFileProcessing(ai, uploadedFile.name);
 
-      if (fileStatus.state === "FAILED") {
-        throw new Error("File processing failed");
-      }
-
-      // Generate structured response
+      console.log("Generating AI content analysis...");
+      // Generate structured response (no timeout - waits until complete)
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: [
@@ -175,6 +206,8 @@ export async function POST(req: NextRequest) {
           },
         ],
       });
+
+      console.log("AI content generation completed");
 
       // Parse JSON response - handle markdown code blocks
       let structuredData;
@@ -243,12 +276,15 @@ export async function POST(req: NextRequest) {
       console.log("Resume saved with ID:", resume._id);
       console.log("Resume LinkedIn:", structuredData.contactInfo?.linkedin);
 
-      // Check if user has access to updated resume feature
-      const user = await User.findById(decoded.userId);
-      const ALLOWED_EMAILS = ["contact.deepakrajput@gmail.com"];
-      
-      if (user && ALLOWED_EMAILS.includes(user.email)) {
-        try {
+      // Generate markdown synchronously - wait for all tasks to complete
+      let updatedResumeMarkdown = null;
+      try {
+        const user = await User.findById(decoded.userId);
+        const ALLOWED_EMAILS = ["contact.deepakrajput@gmail.com"];
+
+        if (user && ALLOWED_EMAILS.includes(user.email)) {
+          console.log("Generating updated resume markdown...");
+
           // Read the original resume.md file
           const resumeMdPath = path.join(process.cwd(), "public", "resume.md");
           let originalResumeMarkdown = "";
@@ -263,7 +299,11 @@ export async function POST(req: NextRequest) {
           const resumeMarkdownPrompt = `You are tasked with updating an existing resume in markdown format based on the resume analysis and job requirements.
 
 ORIGINAL RESUME (resume.md):
-${originalResumeMarkdown ? "```markdown\n" + originalResumeMarkdown + "\n```" : "No original resume provided. Generate a new resume."}
+${
+  originalResumeMarkdown
+    ? "```markdown\n" + originalResumeMarkdown + "\n```"
+    : "No original resume provided. Generate a new resume."
+}
 
 JOB REQUIREMENTS:
 Job Title: "${jobTitle}"
@@ -271,11 +311,31 @@ Job Description: ${jobDescription}
 
 RESUME ANALYSIS DATA:
 - ATS Score: ${structuredData.atsScore}/100
-- Strengths: ${structuredData.strengths.length > 0 ? structuredData.strengths.join(", ") : "None identified"}
-- Improvement Areas: ${structuredData.improvementAreas.length > 0 ? structuredData.improvementAreas.join(", ") : "None identified"}
-- Matched Keywords: ${structuredData.keywordMatch.matched.length > 0 ? structuredData.keywordMatch.matched.join(", ") : "None"}
-- Missing Keywords: ${structuredData.keywordMatch.missing.length > 0 ? structuredData.keywordMatch.missing.join(", ") : "None"}
-- Recommendations: ${structuredData.recommendations.length > 0 ? structuredData.recommendations.join("; ") : "None"}
+- Strengths: ${
+            structuredData.strengths.length > 0
+              ? structuredData.strengths.join(", ")
+              : "None identified"
+          }
+- Improvement Areas: ${
+            structuredData.improvementAreas.length > 0
+              ? structuredData.improvementAreas.join(", ")
+              : "None identified"
+          }
+- Matched Keywords: ${
+            structuredData.keywordMatch.matched.length > 0
+              ? structuredData.keywordMatch.matched.join(", ")
+              : "None"
+          }
+- Missing Keywords: ${
+            structuredData.keywordMatch.missing.length > 0
+              ? structuredData.keywordMatch.missing.join(", ")
+              : "None"
+          }
+- Recommendations: ${
+            structuredData.recommendations.length > 0
+              ? structuredData.recommendations.join("; ")
+              : "None"
+          }
 
 CONTACT INFORMATION (use this if different from original):
 - Name: ${structuredData.contactInfo.name || "Keep original"}
@@ -319,7 +379,7 @@ Return ONLY the updated markdown content, no explanations or code blocks. The ou
             ],
           });
 
-          let updatedResumeMarkdown = markdownResponse.text || "";
+          updatedResumeMarkdown = markdownResponse.text || "";
 
           // Clean up markdown if wrapped in code blocks
           if (updatedResumeMarkdown.includes("```")) {
@@ -334,25 +394,32 @@ Return ONLY the updated markdown content, no explanations or code blocks. The ou
           await resume.save();
 
           console.log("Updated resume markdown generated and saved");
-        } catch (markdownError) {
-          console.error("Error generating updated resume markdown:", markdownError);
-          // Continue even if markdown generation fails
         }
+      } catch (markdownError) {
+        console.error(
+          "Error generating updated resume markdown:",
+          markdownError
+        );
+        // Continue even if markdown generation fails - don't block the response
       }
 
-      // Clean up uploaded file from Gemini (optional)
+      // Clean up uploaded file from Gemini
       try {
         if (uploadedFile && uploadedFile.name) {
           await ai.files.delete({ name: uploadedFile.name });
+          console.log("Cleaned up uploaded file from Gemini");
         }
       } catch (deleteError) {
         console.warn("Failed to delete file from Gemini:", deleteError);
       }
 
+      // Return response only after all tasks are complete
+      console.log("All tasks completed, returning response");
       return NextResponse.json({
         success: true,
         data: structuredData,
         resumeId: resume._id,
+        markdownGenerated: updatedResumeMarkdown !== null,
       });
     } catch (aiError: any) {
       console.error("AI processing error:", aiError);
