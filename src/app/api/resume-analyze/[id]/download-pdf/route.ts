@@ -91,68 +91,101 @@ export async function GET(
     <title>Resume - ${resume.jobTitle}</title>
     <style>
         @page {
-            margin: 0.75in;
+            margin: 0.5in 0.6in;
             size: A4;
         }
         body {
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.3;
-            color: #333;
+            font-family: "Calibri", "Roboto", "Segoe UI", "Arial", sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #1a1a1a;
             margin: 0;
             padding: 0;
+            text-align: justify;
         }
         h1 {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            margin-top: 16px;
-            border-bottom: 1px solid #666;
-            padding-bottom: 3px;
+            font-size: 24pt;
+            font-weight: 700;
+            margin-bottom: 4px;
+            margin-top: 0;
+            color: #000;
             line-height: 1.2;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+        h1 + p {
+            text-align: center;
+            margin-bottom: 16px;
+            font-size: 10pt;
+            color: #444;
         }
         h2 {
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 14px;
+            font-size: 12pt;
+            font-weight: 700;
+            margin-top: 16px;
             margin-bottom: 8px;
-            border-bottom: 1px solid #666;
-            padding-bottom: 3px;
+            border-bottom: 1px solid #777;
+            padding-bottom: 2px;
             line-height: 1.2;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #2c5282;
         }
         hr {
             border: none;
-            border-top: 1px solid #ccc;
-            margin: 12px 0;
+            border-top: 1px solid #e0e0e0;
+            margin: 8px 0;
         }
         h3 {
-            font-size: 14px;
-            font-weight: bold;
-            margin-top: 12px;
-            margin-bottom: 6px;
+            font-size: 11pt;
+            font-weight: 700;
+            margin-top: 10px;
+            margin-bottom: 4px;
             line-height: 1.2;
+            color: #000;
+        }
+        h4 {
+             font-size: 11pt;
+             font-weight: 600;
+             font-style: italic;
+             margin-top: 8px;
+             margin-bottom: 2px;
         }
         p {
-            font-size: 14px;
+            font-size: 11pt;
             margin: 4px 0;
-            line-height: 1.3;
+            line-height: 1.5;
+            text-align: justify;
+            hyphens: auto;
         }
         ul, ol {
-            margin: 6px 0;
-            padding-left: 25px;
-            line-height: 1.3;
+            margin: 4px 0;
+            padding-left: 20px;
+            line-height: 1.5;
         }
         li {
-            font-size: 14px;
+            font-size: 11pt;
             margin: 3px 0;
-            line-height: 1.3;
+            line-height: 1.5;
+            text-align: justify;
         }
         strong {
-            font-weight: bold;
+            font-weight: 700;
+            color: #000;
         }
         a {
-            color: #0066cc;
+            color: #2b6cb0;
             text-decoration: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        td {
+            padding: 4px;
+            vertical-align: top;
         }
         @media print {
             body {
