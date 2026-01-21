@@ -187,12 +187,18 @@ export async function POST(req: NextRequest) {
       await waitForFileProcessing(ai, uploadedFile.name);
 
       console.log("Generating AI content analysis...");
+      const currentDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
       // Generate structured response (no timeout - waits until complete)
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: [
           {
-            text: `Analyze this resume for "${jobTitle}" position. Job Description: "${jobDescription}"`,
+            text: `Analyze this resume for "${jobTitle}" position. Job Description: "${jobDescription}". Current Date: ${currentDate}. IMPORTANT: When evaluating dates, use ${currentDate} as the reference for "Present" or "Current".`,
           },
           {
             text: guardRails.structuredJsonOutput,
@@ -284,7 +290,7 @@ export async function POST(req: NextRequest) {
         success: true,
         data: structuredData,
         resumeId: resume._id,
-        markdownGenerating: false, // Will be true if markdown generation starts
+        markdownGenerating: true, // Will be true if markdown generation starts
       });
 
       // Generate markdown asynchronously in background (non-blocking)
@@ -292,9 +298,10 @@ export async function POST(req: NextRequest) {
       (async () => {
         try {
           const user = await User.findById(decoded.userId);
-          const ALLOWED_EMAILS = ["contact.deepakrajput@gmail.com"];
+          // const ALLOWED_EMAILS = ["contact.deepakrajput@gmail.com"];
 
-          if (!user || !ALLOWED_EMAILS.includes(user.email)) {
+          // if (!user || !ALLOWED_EMAILS.includes(user.email)) {
+          if (!user) {
             // Clean up file immediately if user doesn't have access
             try {
               if (uploadedFile && uploadedFile.name) {
@@ -323,11 +330,10 @@ export async function POST(req: NextRequest) {
           const resumeMarkdownPrompt = `You are tasked with updating an existing resume in markdown format based on the resume analysis and job requirements.
 
 ORIGINAL RESUME (resume.md):
-${
-  originalResumeMarkdown
-    ? "```markdown\n" + originalResumeMarkdown + "\n```"
-    : "No original resume provided. Generate a new resume."
-}
+${originalResumeMarkdown
+              ? "```markdown\n" + originalResumeMarkdown + "\n```"
+              : "No original resume provided. Generate a new resume."
+            }
 
 JOB REQUIREMENTS:
 Job Title: "${jobTitle}"
@@ -335,31 +341,26 @@ Job Description: ${jobDescription}
 
 RESUME ANALYSIS DATA:
 - ATS Score: ${structuredData.atsScore}/100
-- Strengths: ${
-            structuredData.strengths.length > 0
+- Strengths: ${structuredData.strengths.length > 0
               ? structuredData.strengths.join(", ")
               : "None identified"
-          }
-- Improvement Areas: ${
-            structuredData.improvementAreas.length > 0
+            }
+- Improvement Areas: ${structuredData.improvementAreas.length > 0
               ? structuredData.improvementAreas.join(", ")
               : "None identified"
-          }
-- Matched Keywords: ${
-            structuredData.keywordMatch.matched.length > 0
+            }
+- Matched Keywords: ${structuredData.keywordMatch.matched.length > 0
               ? structuredData.keywordMatch.matched.join(", ")
               : "None"
-          }
-- Missing Keywords: ${
-            structuredData.keywordMatch.missing.length > 0
+            }
+- Missing Keywords: ${structuredData.keywordMatch.missing.length > 0
               ? structuredData.keywordMatch.missing.join(", ")
               : "None"
-          }
-- Recommendations: ${
-            structuredData.recommendations.length > 0
+            }
+- Recommendations: ${structuredData.recommendations.length > 0
               ? structuredData.recommendations.join("; ")
               : "None"
-          }
+            }
 
 CONTACT INFORMATION (use this if different from original):
 - Name: ${structuredData.contactInfo.name || "Keep original"}
@@ -389,10 +390,10 @@ Return ONLY the updated markdown content, no explanations or code blocks. The ou
           }
 
           const markdownResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-3-flash-preview",
             contents: [
               {
-                text: resumeMarkdownPrompt,
+                text: `${resumeMarkdownPrompt}\n\nCurrent Date: ${currentDate}`,
               },
               {
                 fileData: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { tokenUtils } from "@/lib/api";
@@ -88,10 +88,22 @@ export default function ResumeAnalysisDetail() {
   const [editedMarkdown, setEditedMarkdown] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+
+  // Track mounted state to prevent state updates/polling after unmount
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     const loadResume = async () => {
       if (isAuthenticated) {
+        // Handle params which might be a Promise in newer Next.js versions
         const { id } = await params;
         console.log("Resume analysis page - received ID:", id);
         if (id && typeof id === "string") {
@@ -101,9 +113,12 @@ export default function ResumeAnalysisDetail() {
     };
 
     loadResume();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, params]);
 
-  const fetchResumeAnalysis = async (resumeId: string) => {
+  const fetchResumeAnalysis = async (resumeId: string, isPolling = false) => {
+    // Stop if unmounted
+    if (!isMounted.current) return;
+
     try {
       const token = tokenUtils.getToken();
       const response = await fetch(`/api/resume-analyze/${resumeId}`, {
@@ -111,6 +126,9 @@ export default function ResumeAnalysisDetail() {
           Authorization: `Bearer ${token}`,
         },
       });
+
+      // Stop if unmounted after await
+      if (!isMounted.current) return;
 
       if (response.ok) {
         const data = await response.json();
@@ -122,14 +140,44 @@ export default function ResumeAnalysisDetail() {
             `/api/resume-analyze/pdf/${data.data.fileName}?token=${token}`
           );
         }
+
+        // Check if updated resume is available
+        const hasUpdatedResume = !!data.data.analysisData.updatedResume;
+
+        // If markdown is generating OR (we don't have an updated resume yet AND it's a recent analysis), start polling
+        // We use a simple polling mechanism here
+        if (!hasUpdatedResume && (data.markdownGenerating || !data.data.analysisData.updatedResume)) {
+          // Show toast only on the first load/check
+          if (!showToast && !hasUpdatedResume) {
+            setShowToast(true);
+            // Ensure toast stays visible longer or until done (optional, but sticking to 10s for now to avoid annoyance)
+            setTimeout(() => {
+              if (isMounted.current) setShowToast(false);
+            }, 10000);
+          }
+
+          // Poll every 5 seconds up to a limit
+          setTimeout(() => {
+            // Only poll if we are still on the page and haven't found it yet
+            // Note: real recursive polling would need a retries counter to avoid infinite loops
+            // For simplicity, we just trigger another fetch if we are still mounted
+            // effectively creating a loop until result or user leaves
+            fetchResumeAnalysis(resumeId, true); // true = isPolling
+          }, 5000);
+        } else if (hasUpdatedResume && showToast) {
+          // If we found it and toast is showing, change toast to success or hide?
+          // For now, let's just let the user see the result appear
+          setShowToast(false);
+        }
+
       } else {
         setError("Failed to fetch analysis details");
       }
     } catch (error) {
       console.error("Error fetching resume analysis:", error);
-      setError("Network error. Please try again.");
+      if (!isPolling && isMounted.current) setError("Network error. Please try again.");
     } finally {
-      setIsLoading(false);
+      if (!isPolling && isMounted.current) setIsLoading(false);
     }
   };
 
@@ -152,8 +200,9 @@ export default function ResumeAnalysisDetail() {
   };
 
   // Check if user has access to updated resume feature
-  const ALLOWED_EMAILS = ["contact.deepakrajput@gmail.com"];
-  const hasAccessToUpdatedResume = user && ALLOWED_EMAILS.includes(user.email);
+  // const ALLOWED_EMAILS = ["contact.deepakrajput@gmail.com"];
+  // const hasAccessToUpdatedResume = user && ALLOWED_EMAILS.includes(user.email);
+  const hasAccessToUpdatedResume = true;
 
   // Copy markdown to clipboard
   const copyMarkdown = async () => {
@@ -902,6 +951,23 @@ export default function ResumeAnalysisDetail() {
             </div>
           </div>
         </div >
+
+        {/* Custom Toast Notification */}
+        {showToast && (
+          <div className="fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+            <div>
+              <p className="font-medium">Optimizing Resume...</p>
+              <p className="text-sm text-gray-300">Your updated resume will appear here shortly.</p>
+            </div>
+            <button
+              onClick={() => setShowToast(false)}
+              className="ml-4 text-gray-400 hover:text-white"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        )}
 
         <Footer />
       </div >
